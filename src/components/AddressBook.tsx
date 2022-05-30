@@ -25,6 +25,8 @@ import {
 import { Network } from "../redux/networks";
 import { ethers } from "ethers";
 
+import ConnectCeramicButton, { useAdressBookSync } from "./ConnectCeramicButton";
+
 export const AddressBookButton: FC<{
   network: Network;
   address: string;
@@ -68,6 +70,7 @@ export const AddressBookDialog: FC<{
   const existingEntry = useAppSelector((state) =>
     addressBookSelectors.selectById(state, createEntryId(network, address))
   );
+  const addressBook = useAdressBookSync();
 
   const getInitialNameTag = () => existingEntry?.nameTag ?? "";
   const [nameTag, setNameTag] = useState<string>(getInitialNameTag());
@@ -83,6 +86,7 @@ export const AddressBookDialog: FC<{
       dispatch(
         addressBookSlice.actions.entryRemoved(getEntryId(existingEntry))
       );
+      addressBook.remove(existingEntry);
     }
     handleClose();
   };
@@ -91,13 +95,15 @@ export const AddressBookDialog: FC<{
     const nameTagTrimmed = nameTag.trim();
     // Only save non-empty names
     if (nameTagTrimmed) {
+      const entry = {
+        chainId: network.chainId,
+        address: ethers.utils.getAddress(address),
+        nameTag: nameTagTrimmed,
+      }
       dispatch(
-        addressBookSlice.actions.entryUpserted({
-          chainId: network.chainId,
-          address: ethers.utils.getAddress(address),
-          nameTag: nameTagTrimmed,
-        })
+        addressBookSlice.actions.entryUpserted(entry)
       );
+      addressBook.add(entry);
     }
     handleClose();
   };
@@ -111,8 +117,12 @@ export const AddressBookDialog: FC<{
           </DialogTitle>
         </Box>
         <Divider />
+        <Box px={3}>
+          <ConnectCeramicButton />
+        </Box>
         <DialogContent>
           <DialogContentText></DialogContentText>
+          {/* Wrap in a form to enable save with enter instead of clicking button */}
           <TextField
             autoFocus
             margin="dense"
