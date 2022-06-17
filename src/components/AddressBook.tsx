@@ -11,6 +11,7 @@ import {
   SvgIconProps,
   TextField,
   Tooltip,
+  Avatar,
 } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import StarIcon from "@mui/icons-material/Star";
@@ -24,6 +25,7 @@ import {
 } from "../redux/slices/addressBook.slice";
 import { Network } from "../redux/networks";
 import { ethers } from "ethers";
+import { ensApi } from "../redux/slices/ensResolver.slice";
 
 export const AddressBookButton: FC<{
   network: Network;
@@ -34,6 +36,14 @@ export const AddressBookButton: FC<{
     addressBookSelectors.selectById(state, createEntryId(network, address))
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const avatarUrl = ensApi.useLookupAvatarQuery(
+    address
+  )
+
+  const ensAddress = ensApi.useLookupAddressQuery(
+    address
+  )
 
   return (
     <>
@@ -50,10 +60,12 @@ export const AddressBookButton: FC<{
       </Tooltip>
       <AddressBookDialog
         network={network}
-        address={address}
+        address={ address}
         open={isDialogOpen}
         handleClose={() => setIsDialogOpen(false)}
+        description={ensAddress.data?.name}
       />
+      {avatarUrl.data ? <Avatar alt={address} src={avatarUrl.data?.avatar} /> : ''}
     </>
   );
 };
@@ -62,15 +74,21 @@ export const AddressBookDialog: FC<{
   network: Network;
   address: string;
   open: boolean;
+  description: string;
   handleClose: () => void;
-}> = ({ network, address, open, handleClose }) => {
+}> = ({ network, address, open, handleClose, description }) => {
   const dispatch = useAppDispatch();
   const existingEntry = useAppSelector((state) =>
     addressBookSelectors.selectById(state, createEntryId(network, address))
   );
 
-  const getInitialNameTag = () => existingEntry?.nameTag ?? "";
+  const ensQuery = ensApi.useLookupAddressQuery(
+    address
+  )
+
+  const getInitialNameTag = () => ensQuery.data?.name ?? existingEntry?.nameTag ?? "";
   const [nameTag, setNameTag] = useState<string>(getInitialNameTag());
+
 
   // Fixes: https://github.com/superfluid-finance/superfluid-console/issues/21
   useEffect(() => {
@@ -95,7 +113,7 @@ export const AddressBookDialog: FC<{
         addressBookSlice.actions.entryUpserted({
           chainId: network.chainId,
           address: ethers.utils.getAddress(address),
-          nameTag: nameTagTrimmed,
+          nameTag: nameTagTrimmed
         })
       );
     }

@@ -60,10 +60,14 @@ import {
 } from "../../../redux/slices/addressBook.slice";
 import { sfSubgraph } from "../../../redux/store";
 import ellipsisAddress from "../../../utils/ellipsisAddress";
+import { ensApi } from '../../../redux/slices/ensResolver.slice';
 
 const AccountPage: NextPage = () => {
   const network = useContext(NetworkContext);
   const address = useContext(IdContext);
+
+  const ensAddressQuery = ensApi.useLookupAddressQuery(address);
+  const ensName = ensAddressQuery.data?.name
 
   const accountQuery = sfSubgraph.useAccountQuery({
     chainId: network.chainId,
@@ -98,6 +102,8 @@ const AccountPage: NextPage = () => {
     (tab as string) ?? "streams"
   );
 
+
+
   useEffect(() => {
     router.replace({
       query: {
@@ -127,6 +133,10 @@ const AccountPage: NextPage = () => {
   const tokensWithBalance = tokens.filter(
     (snapshot) => Number(snapshot.balanceUntilUpdatedAt) !== 0
   );
+
+
+
+
   return (
     <Container component={Box} sx={{ my: 2, py: 2 }}>
       <Stack direction="row" alignItems="center" gap={1}>
@@ -148,6 +158,7 @@ const AccountPage: NextPage = () => {
             <AddressBookButton
               network={network}
               address={accountQuery.data.id}
+              description={ensName}
             />
             <Typography
               data-cy={"address"}
