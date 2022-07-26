@@ -4,13 +4,13 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   Divider,
   IconButton,
   SvgIconProps,
   TextField,
   Tooltip,
+  Avatar,
 } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import StarIcon from "@mui/icons-material/Star";
@@ -23,6 +23,7 @@ import {
   getEntryId,
 } from "../redux/slices/addressBook.slice";
 import { Network } from "../redux/networks";
+import { ensApi } from "../redux/slices/ensResolver.slice";
 import { ethers } from "ethers";
 
 export const AddressBookButton: FC<{
@@ -34,6 +35,10 @@ export const AddressBookButton: FC<{
     addressBookSelectors.selectById(state, createEntryId(network, address))
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const avatarUrl = ensApi.useLookupAvatarQuery(
+    address
+  )
 
   return (
     <>
@@ -54,6 +59,7 @@ export const AddressBookButton: FC<{
         open={isDialogOpen}
         handleClose={() => setIsDialogOpen(false)}
       />
+      {avatarUrl.currentData ? <Avatar alt={address} src={avatarUrl.currentData?.avatar} /> : ''}
     </>
   );
 };
@@ -70,6 +76,7 @@ export const AddressBookDialog: FC<{
   );
 
   const getInitialNameTag = () => existingEntry?.nameTag ?? "";
+
   const [nameTag, setNameTag] = useState<string>(getInitialNameTag());
 
   // Fixes: https://github.com/superfluid-finance/superfluid-console/issues/21
@@ -112,7 +119,6 @@ export const AddressBookDialog: FC<{
         </Box>
         <Divider />
         <DialogContent>
-          <DialogContentText></DialogContentText>
           <TextField
             autoFocus
             margin="dense"
@@ -121,7 +127,7 @@ export const AddressBookDialog: FC<{
             type="text"
             fullWidth
             variant="standard"
-            value={nameTag}
+            value={`${nameTag}`}
             onChange={(event) => setNameTag(event.target.value)}
           />
         </DialogContent>

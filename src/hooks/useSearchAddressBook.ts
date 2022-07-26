@@ -12,7 +12,7 @@ export const useSearchAddressBook = (searchTerm: string) => {
 
   return networks.map((network) => {
     const addressBookEntries = useAppSelector((state) =>
-      searchTerm !== "" && !isSearchTermAddress
+        searchTerm !== "" && !isSearchTermAddress
         ? addressBookSelectors
           .selectAll(state)
           .filter((x) => x.chainId === network.chainId)

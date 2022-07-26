@@ -34,6 +34,7 @@ import InfoTooltipBtn from "../../../components/InfoTooltipBtn";
 import AccountNetworkSelect from "../../../components/NetworkSelect/AccountNetworkSelect";
 import SkeletonAddress from "../../../components/skeletons/SkeletonAddress";
 import SkeletonNetwork from "../../../components/skeletons/SkeletonNetwork";
+import { ensApi } from "../../../redux/slices/ensResolver.slice";
 import SubgraphQueryLink from "../../../components/SubgraphQueryLink";
 import {
   incomingStreamOrderingDefault,
@@ -64,11 +65,14 @@ import ellipsisAddress from "../../../utils/ellipsisAddress";
 const AccountPage: NextPage = () => {
   const network = useContext(NetworkContext);
   const address = useContext(IdContext);
-
   const accountQuery = sfSubgraph.useAccountQuery({
     chainId: network.chainId,
     id: address,
   });
+
+  const ensAddressQuery = ensApi.useLookupAddressQuery(address);
+
+  const ensName = ensAddressQuery.currentData?.name
 
   const prefetchStreamsQuery = sfSubgraph.usePrefetch("streams");
   const prefetchIndexesQuery = sfSubgraph.usePrefetch("indexes");
@@ -109,7 +113,7 @@ const AccountPage: NextPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabValue]);
 
-  const addressBookEntry = useAppSelector((state) =>
+  const addressBookEntry = useAppSelector((state: any) =>
     network
       ? addressBookSelectors.selectById(state, createEntryId(network, address))
       : undefined
@@ -150,17 +154,28 @@ const AccountPage: NextPage = () => {
               address={accountQuery.data.id}
             />
             <Typography
+               data-cy={"ensName"}
+               variant="h4"
+              component="h1"
+               sx={{ mx: 1 }}
+            >
+              {
+                addressBookEntry ?
+                  addressBookEntry.nameTag
+                  :
+                  ensName
+              }
+            </Typography>
+            <Typography
               data-cy={"address"}
               variant="h4"
               component="h1"
               sx={{ mx: 1 }}
             >
-              {addressBookEntry
-                ? addressBookEntry.nameTag
-                : ellipsisAddress(
-                    ethers.utils.getAddress(accountQuery.data.id),
-                    6
-                  )}
+              {ellipsisAddress(
+                  ethers.utils.getAddress(accountQuery.data.id),
+                  6
+              )}
             </Typography>
             <CopyIconBtn
               copyText={ethers.utils.getAddress(accountQuery.data.id)}

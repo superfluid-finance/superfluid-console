@@ -45,7 +45,6 @@ const SearchDialog: FC<{ open: boolean; close: () => void }> = ({
   };
 
   const router = useRouter();
-
   const [searchTermVisible, setSearchTermVisible] = useState("");
   const [searchTermDebounced, _setSearchTermDebounced] =
     useState(searchTermVisible);
@@ -67,9 +66,7 @@ const SearchDialog: FC<{ open: boolean; close: () => void }> = ({
     const handleRouteChange = () => {
       handleClose();
     };
-
     router.events.on("routeChangeStart", handleRouteChange);
-
     // If the component is unmounted, unsubscribe
     // from the event with the `off` method:
     return () => {
@@ -139,7 +136,18 @@ const SearchDialog: FC<{ open: boolean; close: () => void }> = ({
                         href={`/${x.network.slugName}/accounts/${account.id}`}
                         passHref
                       >
-                        <ListItemButton component="a">
+                        <ListItemButton component="a"
+                        sx={{ display: 'flex', alignItems: 'flex-start',
+                        flexDirection: 'column', justifyContent: 'flex-start' }}>
+                          {
+                            account.ENS.includes('.') ?
+                            <Typography  sx={{ mr: 2, mb: 0.5 }} variant={"h5"} component="h2">
+                              {account.ENS}
+                            </Typography>
+                            :
+                            ''
+                          }
+
                           <AccountAddressFormatted
                             network={x.network}
                             address={account.id}

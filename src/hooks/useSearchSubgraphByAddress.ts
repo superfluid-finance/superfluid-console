@@ -62,7 +62,8 @@ export const useSearchSubgraphByAddress = (searchTerm: string) => {
             addressBytes: searchTerm.toLowerCase(),
           },
         }
-        : skipToken
+        :
+        skipToken
     )
   );
 };
