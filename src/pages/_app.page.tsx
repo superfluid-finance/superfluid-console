@@ -25,6 +25,9 @@ import useSfTheme from '../styles/useSfTheme'
 import createEmotionCache from '../utils/createEmotionCache'
 import { tryFindNetwork } from '../utils/findNetwork'
 import { isDynamicRoute } from '../utils/isDynamicRoute'
+import { WagmiProvider } from 'wagmi'
+import { wagmiConfig } from './wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache()
@@ -32,6 +35,8 @@ const clientSideEmotionCache = createEmotionCache()
 interface MyAppProps extends AppProps {
   emotionCache?: EmotionCache
 }
+
+const queryClient = new QueryClient()
 
 function MyApp(props: MyAppProps) {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props
@@ -75,34 +80,38 @@ function MyApp(props: MyAppProps) {
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
         <AvailableNetworksProvider>
-          <Box
-            sx={{
-              display: 'flex',
-              flexFlow: 'column',
-              maxHeight: '100vh'
-            }}
-          >
-            <SfAppBar />
-            <Box
-              ref={scrollableContentRef}
-              component="main"
-              sx={{ height: '100vh', overflow: 'auto' }}
-            >
-              <Layout>
-                <ErrorBoundary
-                  fallback={() => <span />}
-                  onError={() => {
-                    alert(
-                      "The page crashed. :( The error is in the browser's developer console. Reloading the page or clearing your local storage could resolve the issue. Don't hesitate to let us know of this situation!"
-                    )
-                  }}
+          <WagmiProvider config={wagmiConfig}>
+            <QueryClientProvider client={queryClient}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexFlow: 'column',
+                  maxHeight: '100vh'
+                }}
+              >
+                <SfAppBar />
+                <Box
+                  ref={scrollableContentRef}
+                  component="main"
+                  sx={{ height: '100vh', overflow: 'auto' }}
                 >
-                  <Component {...pageProps} />
-                </ErrorBoundary>
-              </Layout>
-              <Footer />
-            </Box>
-          </Box>
+                  <Layout>
+                    <ErrorBoundary
+                      fallback={() => <span />}
+                      onError={() => {
+                        alert(
+                          "The page crashed. :( The error is in the browser's developer console. Reloading the page or clearing your local storage could resolve the issue. Don't hesitate to let us know of this situation!"
+                        )
+                      }}
+                    >
+                      <Component {...pageProps} />
+                    </ErrorBoundary>
+                  </Layout>
+                  <Footer />
+                </Box>
+              </Box>
+            </QueryClientProvider>
+          </WagmiProvider>
         </AvailableNetworksProvider>
       </ThemeProvider>
     </CacheProvider>

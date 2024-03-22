@@ -17,11 +17,9 @@ import { Network } from '../../../redux/networks'
 import { PoolMember_OrderBy } from '../../../subgraphs/gda/.graphclient'
 import { PoolMember } from '../../../subgraphs/gda/entities/poolMember/poolMember'
 import { PoolMemberDetailsDialog } from '../pool-members/PoolMemberDetails'
-import {
-  PoolInput,
-  PoolMemberTotalAmountReceived
-} from '../pool-members/PoolMemberTotalAmountReceived'
+import { PoolMemberTotalAmountReceived } from '../pool-members/PoolMemberTotalAmountReceived'
 import { PoolQuery } from './PoolQuery'
+import { Pool } from '../../../subgraphs/gda/entities/pool/pool'
 
 interface Props {
   network: Network
@@ -32,7 +30,7 @@ interface Props {
   setPaging: (paging: SkipPaging) => void
   ordering: Ordering<PoolMember_OrderBy> | undefined
   setOrdering: (ordering?: Ordering<PoolMember_OrderBy>) => void
-  pool: PoolInput | null | undefined
+  pool: Pool | null | undefined
 }
 
 const PoolMemberDataGrid: FC<Props> = ({
@@ -99,7 +97,11 @@ const PoolMemberDataGrid: FC<Props> = ({
         flex: 2,
         renderCell: (params: GridRenderCellParams<string, PoolMember>) =>
           pool ? (
-            <PoolMemberTotalAmountReceived member={params.row} pool={pool}>
+            <PoolMemberTotalAmountReceived
+              chainId={network.chainId}
+              memberAddress={params.row.account}
+              poolAddress={pool.id}
+            >
               {({
                 memberCurrentTotalAmountReceived,
                 memberFlowRate,
